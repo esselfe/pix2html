@@ -117,6 +117,7 @@ int main(int argc, char **argv) {
 
 	unsigned int pagecnt = 1, pics_per_page = 100, picscnt = 0;
 	char *fullname = (char *)malloc(4096);
+	char *fullname_parent = (char *)malloc(4096);
 	memset(fullname, 0, 4096);
 	char *pagename = malloc(1024);
 	memset(pagename, 0, 1024);
@@ -150,6 +151,7 @@ int main(int argc, char **argv) {
 		++picscnt;
 
 		sprintf(fullname, "%s/%s", dirname, de->d_name);
+		sprintf(fullname_parent, "../%s/%s", dirname, de->d_name);
 		mgstr = magic_file(mg, fullname);
 		if (strncmp(mgstr, "image/png", 9) == 0)
 			pixdimPNG_GetSize(fullname, &width, &height, &depth);
@@ -193,7 +195,7 @@ int main(int argc, char **argv) {
 			linecnt = 0;
 		}
 		sprintf(spec[linecnt].name, "%s", de->d_name);
-		sprintf(spec[linecnt].fullname, "%s", fullname);
+		sprintf(spec[linecnt].fullname, "%s", fullname_parent);
 		spec[linecnt].width = width;
 		spec[linecnt].height = height;
 		spec[linecnt].depth = depth;
