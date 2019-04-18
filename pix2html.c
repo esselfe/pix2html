@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pics2html_version_string = "0.0.1.3";
+const char *pics2html_version_string = "0.0.1.4";
 
 #define OPTION_NONE       0
 #define OPTION_VERBOSE    1
@@ -125,6 +125,8 @@ int main(int argc, char **argv) {
 	char *pagefullname = malloc(1024);
 	memset(pagefullname, 0, 1024);
 	sprintf(pagefullname, "%s/%s", pagedir, pagename);
+	char *pagenamenext = (char *)malloc(1024);
+	sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
 	FILE *fp = fopen(pagefullname, "w+");
 	if (fp == NULL) {
 		fprintf(stderr, "Cannot open %s: %s\n", pagefullname, strerror(errno));
@@ -206,7 +208,9 @@ int main(int argc, char **argv) {
 			fullname, preview_width, preview_height);
 		
 		if (picscnt != 0 && (picscnt % pics_per_page) == 0) {
-			fprintf(fp, "  </tr>\n</table>\n</body>\n</html>");
+			sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
+			fprintf(fp, "  </tr><tr><td align=\"right\"><a href=\"%s\">next</a></td></tr>\n</table>\n</body>\n</html>",
+				pagenamenext);
 			fclose(fp);
 			sprintf(pagename, "page-%04u.html", ++pagecnt);
 			sprintf(pagefullname, "%s/%s", pagedir, pagename);
