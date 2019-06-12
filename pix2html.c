@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pics2html_version_string = "0.0.1.4";
+const char *pics2html_version_string = "0.0.1.5";
 
 #define OPTION_NONE       0
 #define OPTION_VERBOSE    1
@@ -25,7 +25,7 @@ const struct option long_options[] = {
 const char *short_options = "hVv";
 
 void HelpShow(void) {
-	printf("Usage: pix2html [ -h/--help | -V/--version | -v/--verbose] DIRNAME\n");
+	printf("Usage: pix2html [ -h/--help | -V/--version | -v/--verbose ] DIRNAME\n");
 }
 
 void VersionShow(void) {
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 		else {
 			if (stat(argv[c], &st) < 0) {
 				fprintf(stderr, "Cannot open %s: %s\n", argv[c], strerror(errno));
-				exit(errno);
+				exit(1);
 			}
 			if (st.st_mode & S_IFDIR) {
 				dirname = argv[c];
@@ -208,6 +208,21 @@ int main(int argc, char **argv) {
 			fullname, preview_width, preview_height);
 		
 		if (picscnt != 0 && (picscnt % pics_per_page) == 0) {
+			fprintf(fp, "  </tr><tr>\n<td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+				spec[0].fullname, spec[0].name, spec[0].width, spec[0].height,
+				spec[0].depth, spec[0].size);
+			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+				spec[1].fullname, spec[1].name, spec[1].width, spec[1].height,
+				spec[1].depth, spec[1].size);
+			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+				spec[2].fullname, spec[2].name, spec[2].width, spec[2].height,
+				spec[2].depth, spec[2].size);
+			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n  </tr><tr>\n",
+				spec[3].fullname, spec[3].name, spec[3].width, spec[3].height,
+				spec[3].depth, spec[3].size);
+			linecnt = 0;
+			--linecnt;
+
 			sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
 			fprintf(fp, "  </tr><tr><td align=\"right\"><a href=\"%s\">next</a></td></tr>\n</table>\n</body>\n</html>",
 				pagenamenext);
