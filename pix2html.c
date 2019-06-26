@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pics2html_version_string = "0.0.1.5";
+const char *pics2html_version_string = "0.0.1.6";
 
 #define OPTION_NONE       0
 #define OPTION_VERBOSE    1
@@ -195,6 +195,18 @@ int main(int argc, char **argv) {
 				spec[3].fullname, spec[3].name, spec[3].width, spec[3].height,
 				spec[3].depth, spec[3].size);
 			linecnt = 0;
+			memset(spec[0].name, 0, 1024);
+			memset(spec[0].fullname, 0, 1024);
+			spec[0].size = 0;
+			memset(spec[1].name, 0, 1024);
+			memset(spec[1].fullname, 0, 1024);
+			spec[1].size = 0;
+			memset(spec[2].name, 0, 1024);
+			memset(spec[2].fullname, 0, 1024);
+			spec[2].size = 0;
+			memset(spec[3].name, 0, 1024);
+			memset(spec[3].fullname, 0, 1024);
+			spec[3].size = 0;
 		}
 		sprintf(spec[linecnt].name, "%s", de->d_name);
 		sprintf(spec[linecnt].fullname, "%s", fullname_parent);
@@ -207,35 +219,41 @@ int main(int argc, char **argv) {
 		fprintf(fp, "<td><img src=\"../%s\" width=\"%u\" height=\"%u\"/></td>\n", 
 			fullname, preview_width, preview_height);
 		
-		if (picscnt != 0 && (picscnt % pics_per_page) == 0) {
-			fprintf(fp, "  </tr><tr>\n<td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
-				spec[0].fullname, spec[0].name, spec[0].width, spec[0].height,
-				spec[0].depth, spec[0].size);
-			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
-				spec[1].fullname, spec[1].name, spec[1].width, spec[1].height,
-				spec[1].depth, spec[1].size);
-			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
-				spec[2].fullname, spec[2].name, spec[2].width, spec[2].height,
-				spec[2].depth, spec[2].size);
-			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n  </tr><tr>\n",
-				spec[3].fullname, spec[3].name, spec[3].width, spec[3].height,
-				spec[3].depth, spec[3].size);
+		if ((picscnt != 0 && (picscnt % pics_per_page) == 0) || picscnt == pics_total) {
+			if (spec[0].size)
+				fprintf(fp, "  </tr><tr>\n<td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+					spec[0].fullname, spec[0].name, spec[0].width, spec[0].height,
+					spec[0].depth, spec[0].size);
+			if (spec[1].size)
+				fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+					spec[1].fullname, spec[1].name, spec[1].width, spec[1].height,
+					spec[1].depth, spec[1].size);
+			if (spec[2].size)
+				fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+					spec[2].fullname, spec[2].name, spec[2].width, spec[2].height,
+					spec[2].depth, spec[2].size);
+			if (spec[3].size)
+				fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n  </tr><tr>\n",
+					spec[3].fullname, spec[3].name, spec[3].width, spec[3].height,
+					spec[3].depth, spec[3].size);
 			linecnt = 0;
 			--linecnt;
 
-			sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
-			fprintf(fp, "  </tr><tr><td align=\"right\"><a href=\"%s\">next</a></td></tr>\n</table>\n</body>\n</html>",
-				pagenamenext);
-			fclose(fp);
-			sprintf(pagename, "page-%04u.html", ++pagecnt);
-			sprintf(pagefullname, "%s/%s", pagedir, pagename);
-			fp = fopen(pagefullname, "w+");
-			if (fp == NULL) {
-				fprintf(stderr, "Cannot open %s: %s\n", pagefullname, strerror(errno));
-				exit(errno);
+			if (picscnt != pics_total) {
+				sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
+				fprintf(fp, "  </tr><tr><td align=\"right\"><a href=\"%s\">next</a></td></tr>\n</table>\n</body>\n</html>",
+					pagenamenext);
+				fclose(fp);
+				sprintf(pagename, "page-%04u.html", ++pagecnt);
+				sprintf(pagefullname, "%s/%s", pagedir, pagename);
+				fp = fopen(pagefullname, "w+");
+				if (fp == NULL) {
+					fprintf(stderr, "Cannot open %s: %s\n", pagefullname, strerror(errno));
+					exit(errno);
+				}
+				fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n<body>\n<table>\n  <tr>\n",
+					pagename);
 			}
-			fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n<body>\n<table>\n  <tr>\n",
-				pagename);
 		}
 		else if ((picscnt % 4) == 0)
 			fprintf(fp, "  </tr><tr>\n");
