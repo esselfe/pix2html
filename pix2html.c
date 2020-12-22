@@ -253,7 +253,9 @@ int main(int argc, char **argv) {
 					fprintf(stderr, "Cannot open %s: %s\n", pagefullname, strerror(errno));
 					exit(errno);
 				}
-				fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n<body bgcolor=\"#020406\">\n<table>\n  <tr>\n",
+				fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n"
+					"<style type=\"text/css\">\nbody {\n  background: #081018;\n"
+					"  color: #a0a8b0;\n}\n</style>\n<body>\n<table>\n  <tr>\n",
 					pagename);
 			}
 		}
