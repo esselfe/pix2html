@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pics2html_version_string = "0.1.9";
+const char *pics2html_version_string = "0.1.10";
 
 #define OPTION_NONE       0
 #define OPTION_VERBOSE    1
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Cannot open %s: %s\n", dirname, strerror(errno));
 		exit(errno);
 	}
-	unsigned int pics_total = 0;
+	unsigned int pics_total = 0, page_total = 0;
 	struct dirent *de;
 	while (1) {
 		de = readdir(dir);
@@ -116,6 +116,9 @@ int main(int argc, char **argv) {
 	magic_load(mg, NULL);
 
 	unsigned int pagecnt = 1, pics_per_page = 100, picscnt = 0;
+	page_total = pics_total / pics_per_page;
+	if ((pics_total % pics_per_page) > 0)
+		++page_total;
 	char *fullname = (char *)malloc(4096);
 	char *fullname_parent = (char *)malloc(4096);
 	memset(fullname, 0, 4096);
@@ -243,9 +246,17 @@ int main(int argc, char **argv) {
 
 			if (picscnt != pics_total) {
 				sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
-				fprintf(fp, "  </tr><tr><td align=\"right\"><a href=\"%s\">next</a></td></tr>\n</table>\n</body>\n</html>",
+				fprintf(fp, "  </tr><tr><td><a href=\"%s\">next</a></td></tr></table>\n"
+					"<table width=\"100%%\"><tr><td>\n",
 					pagenamenext);
+
+				unsigned int cnt;
+				for (cnt = 1; cnt <= page_total; cnt++)
+					fprintf(fp, "<a href=\"page-%04u.html\">%u</a> ", cnt, cnt);
+
+				fprintf(fp, "</td></tr>\n</table>\n</body>\n</html>");
 				fclose(fp);
+
 				sprintf(pagename, "page-%04u.html", ++pagecnt);
 				sprintf(pagefullname, "%s/%s", pagedir, pagename);
 				fp = fopen(pagefullname, "w+");
