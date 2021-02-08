@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pics2html_version_string = "0.1.10";
+const char *pics2html_version_string = "0.1.11";
 
 #define OPTION_NONE       0
 #define OPTION_VERBOSE    1
@@ -187,16 +187,16 @@ int main(int argc, char **argv) {
 
 		++linecnt;
 		if (linecnt >= 4) {
-			fprintf(fp, "  </tr><tr>\n<td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+			fprintf(fp, "  </tr><tr>\n<td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 				spec[0].fullname, spec[0].name, spec[0].width, spec[0].height,
 				spec[0].depth, spec[0].size);
-			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 				spec[1].fullname, spec[1].name, spec[1].width, spec[1].height,
 				spec[1].depth, spec[1].size);
-			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 				spec[2].fullname, spec[2].name, spec[2].width, spec[2].height,
 				spec[2].depth, spec[2].size);
-			fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n  </tr><tr>\n",
+			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n  </tr><tr>\n",
 				spec[3].fullname, spec[3].name, spec[3].width, spec[3].height,
 				spec[3].depth, spec[3].size);
 			linecnt = 0;
