@@ -33,6 +33,7 @@ void VersionShow(void) {
 }
 
 int main(int argc, char **argv) {
+	const char *mgstr = NULL;
 	int c;
 	while (1) {
 		c = getopt_long(argc, argv, short_options, long_options, NULL);
@@ -89,7 +90,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	// Open the directory and get the file count
+	magic_t mg = magic_open(MAGIC_MIME_TYPE);
+	if (mg == NULL) {
+		fprintf(stderr, "magic_open() failed: %s\n", magic_error(mg));
+		exit(1);
+	}
+	magic_load(mg, NULL);
+
+	// Open the directory and get the image file count
 	DIR *dir = opendir(dirname);
 	if (dir == NULL) {
 		fprintf(stderr, "Cannot open %s: %s\n", dirname, strerror(errno));
@@ -103,17 +111,16 @@ int main(int argc, char **argv) {
 			break;
 		else if (strncmp(de->d_name, ".", 1) == 0) continue;
 		else if (strncmp(de->d_name, "..", 2) == 0) continue;
-		else
-			++pics_total;
+		else {
+			char path[4096];
+			sprintf(path, "%s/%s", dirname, de->d_name);
+			mgstr = magic_file(mg, path);
+			if (strncmp(mgstr, "image/png", 9) == 0 || 
+				strncmp(mgstr, "image/jpeg", 10) == 0)
+				++pics_total;
+		}
 	}
 	rewinddir(dir);
-
-	magic_t mg = magic_open(MAGIC_MIME_TYPE);
-	if (mg == NULL) {
-		fprintf(stderr, "magic_open() failed: %s\n", magic_error(mg));
-		exit(1);
-	}
-	magic_load(mg, NULL);
 
 	unsigned int pagecnt = 1, pics_per_page = 100, picscnt = 0;
 	page_total = pics_total / pics_per_page;
@@ -137,10 +144,9 @@ int main(int argc, char **argv) {
 	}
 	fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n"
 		"<style type=\"text/css\">\nbody {\n  background: #081018;\n"
-		"  color: #a0a8b0;\n}\n</style>\n<body>\n<table>\n  <tr>\n",
+		"  color: #a0a8b0;\n}\n</style>\n<body>\n<table>\n<tr>\n",
 		pagename);
 
-	const char *mgstr;
 	unsigned int width, height, depth, preview_width, preview_height;
 	float ratio;
 	int linecnt = -1;
@@ -270,7 +276,7 @@ int main(int argc, char **argv) {
 				}
 				fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n"
 					"<style type=\"text/css\">\nbody {\n  background: #081018;\n"
-					"  color: #a0a8b0;\n}\n</style>\n<body>\n<table>\n  <tr>\n",
+					"  color: #a0a8b0;\n}\n</style>\n<body>\n<table>\n<tr>\n",
 					pagename);
 			}
 		}
