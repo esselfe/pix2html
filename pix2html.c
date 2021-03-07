@@ -12,8 +12,8 @@
 
 const char *pics2html_version_string = "0.1.13";
 
-#define OPTION_NONE			0
-#define OPTION_VERBOSE		1
+#define OPTION_NONE    0
+#define OPTION_VERBOSE 1
 unsigned int options;
 
 const struct option long_options[] = {
@@ -247,16 +247,20 @@ int main(int argc, char **argv) {
 			if (picscnt != pics_total) {
 				sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
 				fprintf(fp, "  <td><a href=\"%s\">next</a></td></tr></table>\n"
-					"<table width=\"100%%\"><tr><td>\n",
-					pagenamenext);
+					"<table width=\"100%%\"><tr><td>\n", pagenamenext);
+			}
+			else
+				fprintf(fp, "</tr></table>\n"
+					"<table width=\"100%%\"><tr><td>\n");
 
-				unsigned int cnt;
-				for (cnt = 1; cnt <= page_total; cnt++)
-					fprintf(fp, "<a href=\"page-%04u.html\">%u</a> ", cnt, cnt);
+			unsigned int cnt;
+			for (cnt = 1; cnt <= page_total; cnt++)
+				fprintf(fp, "<a href=\"page-%04u.html\">%u</a> ", cnt, cnt);
 
-				fprintf(fp, "\n</td></tr>\n</table>\n</body>\n</html>");
-				fclose(fp);
+			fprintf(fp, "\n</td></tr>\n</table>\n</body>\n</html>\n");
+			fclose(fp);
 
+			if (picscnt != pics_total) {
 				sprintf(pagename, "page-%04u.html", ++pagecnt);
 				sprintf(pagefullname, "%s/%s", pagedir, pagename);
 				fp = fopen(pagefullname, "w+");
@@ -280,7 +284,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	fprintf(fp, "  </tr>\n</table>\n</body>\n</html>");
+	fprintf(fp, "  </tr>\n</table>\n</body>\n</html>\n");
 
 	fclose(fp);
 	magic_close(mg);
