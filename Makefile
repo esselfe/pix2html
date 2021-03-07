@@ -1,7 +1,7 @@
 
 CFLAGS = -std=c11 -Wall -Werror -O2 -g -D_GNU_SOURCE
 LDFLAGS = -lpixdim -lmagic
-PROGNAME = pix2html.x
+PROGNAME = pix2html
 
 .PHONY: default all clean
 

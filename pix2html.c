@@ -12,8 +12,8 @@
 
 const char *pics2html_version_string = "0.1.12";
 
-#define OPTION_NONE       0
-#define OPTION_VERBOSE    1
+#define OPTION_NONE			0
+#define OPTION_VERBOSE		1
 unsigned int options;
 
 const struct option long_options[] = {
@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
 
 		++linecnt;
 		if (linecnt >= 4) {
-			fprintf(fp, "  </tr><tr>\n<td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
+			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 				spec[0].fullname, spec[0].name, spec[0].width, spec[0].height,
 				spec[0].depth, spec[0].size);
 			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
 			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 				spec[2].fullname, spec[2].name, spec[2].width, spec[2].height,
 				spec[2].depth, spec[2].size);
-			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n  </tr><tr>\n",
+			fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n</tr><tr>\n",
 				spec[3].fullname, spec[3].name, spec[3].width, spec[3].height,
 				spec[3].depth, spec[3].size);
 			linecnt = 0;
@@ -221,24 +221,24 @@ int main(int argc, char **argv) {
 		stat(fullname, &st);
 		spec[linecnt].size = st.st_size;
 
-		fprintf(fp, "<td><img src=\"../%s\" width=\"%u\" height=\"%u\"/></td>\n", 
-			fullname, preview_width, preview_height);
+		fprintf(fp, "  <td><a href=\"../%s\"><img src=\"../%s\" width=\"%u\" height=\"%u\"/></a></td>\n", 
+			fullname, fullname, preview_width, preview_height);
 		
 		if ((picscnt != 0 && (picscnt % pics_per_page) == 0) || picscnt == pics_total) {
 			if (spec[0].size)
-				fprintf(fp, "  </tr><tr>\n<td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+				fprintf(fp, "</tr><tr>\n  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 					spec[0].fullname, spec[0].name, spec[0].width, spec[0].height,
 					spec[0].depth, spec[0].size);
 			if (spec[1].size)
-				fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+				fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 					spec[1].fullname, spec[1].name, spec[1].width, spec[1].height,
 					spec[1].depth, spec[1].size);
 			if (spec[2].size)
-				fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n",
+				fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n",
 					spec[2].fullname, spec[2].name, spec[2].width, spec[2].height,
 					spec[2].depth, spec[2].size);
 			if (spec[3].size)
-				fprintf(fp, "  <td><a href=\"%s\">%s</a>%ux%u@%u %u</td>\n  </tr><tr>\n",
+				fprintf(fp, "  <td><a href=\"%s\">%s</a><br>%ux%u@%u<br>%u</td>\n</tr><tr>\n",
 					spec[3].fullname, spec[3].name, spec[3].width, spec[3].height,
 					spec[3].depth, spec[3].size);
 			linecnt = 0;
@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
 
 			if (picscnt != pics_total) {
 				sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
-				fprintf(fp, "  </tr><tr><td><a href=\"%s\">next</a></td></tr></table>\n"
+				fprintf(fp, "  <td><a href=\"%s\">next</a></td></tr></table>\n"
 					"<table width=\"100%%\"><tr><td>\n",
 					pagenamenext);
 
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
 				for (cnt = 1; cnt <= page_total; cnt++)
 					fprintf(fp, "<a href=\"page-%04u.html\">%u</a> ", cnt, cnt);
 
-				fprintf(fp, "</td></tr>\n</table>\n</body>\n</html>");
+				fprintf(fp, "\n</td></tr>\n</table>\n</body>\n</html>");
 				fclose(fp);
 
 				sprintf(pagename, "page-%04u.html", ++pagecnt);
@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
 			}
 		}
 		else if ((picscnt % 4) == 0)
-			fprintf(fp, "  </tr><tr>\n");
+			fprintf(fp, "</tr><tr>\n");
 
 		if (options & OPTION_VERBOSE) {
 			printf("\r%u/%.2f pages  %u/%u pictures", pagecnt, 
