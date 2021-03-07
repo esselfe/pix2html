@@ -10,7 +10,7 @@ default: all
 all: $(PROGNAME)
 
 $(PROGNAME): pix2html.c
-	gcc $(CFLAGS) $(LDFLAGS) pix2html.c -o $(PROGNAME)
+	gcc $(CFLAGS) pix2html.c -o $(PROGNAME) $(LDFLAGS)
 
 clean:
 	@rm -v $(PROGNAME) 2>/dev/null || true
