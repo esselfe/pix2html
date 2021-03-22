@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pics2html_version_string = "0.1.15";
+const char *pics2html_version_string = "0.1.16";
 
 #define OPTION_NONE    0
 #define OPTION_VERBOSE 1
@@ -290,9 +290,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-//	fprintf(fp, "  </tr>\n</table>\n</body>\n</html>\n");
-
-//	fclose(fp);
 	magic_close(mg);
 	closedir(dir);
 
