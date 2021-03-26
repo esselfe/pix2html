@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pics2html_version_string = "0.1.16";
+const char *pix2html_version_string = "0.1.16";
 
 #define OPTION_NONE    0
 #define OPTION_VERBOSE 1
@@ -29,7 +29,7 @@ void HelpShow(void) {
 }
 
 void VersionShow(void) {
-	printf("pix2html %s\n", pics2html_version_string);
+	printf("pix2html %s\n", pix2html_version_string);
 }
 
 int main(int argc, char **argv) {
@@ -90,6 +90,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	// Open file type descriptions
 	magic_t mg = magic_open(MAGIC_MIME_TYPE);
 	if (mg == NULL) {
 		fprintf(stderr, "magic_open() failed: %s\n", magic_error(mg));
@@ -144,8 +145,9 @@ int main(int argc, char **argv) {
 	}
 	fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n"
 		"<style type=\"text/css\">\nbody {\n  background: #081018;\n"
-		"  color: #a0a8b0;\n}\n</style>\n<body>\n<table>\n<tr>\n",
-		pagename);
+		"  color: #a0a8b0;\n}\na:link {\n  color: #2080D8;\n}\na:visited {\n"
+		"  color: #1878D0;\n}\na:hover {\n  color: #3090E8;\n}\n</style>\n"
+		"<body>\n<table>\n<tr>\n", pagename);
 
 	unsigned int width, height, depth, preview_width, preview_height;
 	float ratio;
@@ -276,8 +278,9 @@ int main(int argc, char **argv) {
 				}
 				fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n"
 					"<style type=\"text/css\">\nbody {\n  background: #081018;\n"
-					"  color: #a0a8b0;\n}\n</style>\n<body>\n<table>\n<tr>\n",
-					pagename);
+					"  color: #a0a8b0;\n}\na:link {\n  color: #2080D8;\n}\na:visited {\n"
+					"  color: #1878D0;\n}\na:hover {\n  color: #3090E8;\n}\n</style>\n"
+					"<body>\n<table>\n<tr>\n", pagename);
 			}
 		}
 		else if ((picscnt % 4) == 0)
