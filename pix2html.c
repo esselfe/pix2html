@@ -10,7 +10,7 @@
 #include <magic.h>
 #include <pixdim.h>
 
-const char *pix2html_version_string = "0.1.16";
+const char *pix2html_version_string = "0.1.17";
 
 #define OPTION_NONE    0
 #define OPTION_VERBOSE 1
