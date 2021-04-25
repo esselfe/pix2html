@@ -8,9 +8,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <magic.h>
-#include <pixdim.h>
 
-const char *pix2html_version_string = "0.1.17";
+#include "pix2html.h"
+
+const char *pix2html_version_string = "0.2.0";
 
 #define OPTION_NONE    0
 #define OPTION_VERBOSE 1
@@ -169,9 +170,9 @@ int main(int argc, char **argv) {
 		sprintf(fullname_parent, "../%s/%s", dirname, de->d_name);
 		mgstr = magic_file(mg, fullname);
 		if (strncmp(mgstr, "image/png", 9) == 0)
-			pixdimPNG_GetSize(fullname, &width, &height, &depth);
+			PNG_GetSize(fullname, &width, &height, &depth);
 		else if (strncmp(mgstr, "image/jpeg", 10) == 0)
-			pixdimJPG_GetSize(fullname, &width, &height, &depth);
+			JPG_GetSize(fullname, &width, &height, &depth);
 		else {
 			width = 1;
 			height = 1;
