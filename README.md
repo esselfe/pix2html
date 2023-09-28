@@ -1,6 +1,6 @@
 
 pix2html is a program used to generate HTML pages for viewing  
-pictures. Currently only the JPEG and (non-indexed) PNG formats  
+pictures. Currently only the GIF, JPEG and PNG formats  
 are implemented.  
 
 Usage:  
