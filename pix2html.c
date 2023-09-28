@@ -11,7 +11,7 @@
 
 #include "pix2html.h"
 
-const char *pix2html_version_string = "0.2.1";
+const char *pix2html_version_string = "0.3.0";
 
 #define OPTION_NONE    0
 #define OPTION_VERBOSE 1
