@@ -118,7 +118,8 @@ int main(int argc, char **argv) {
 			sprintf(path, "%s/%s", dirname, de->d_name);
 			mgstr = magic_file(mg, path);
 			if (strncmp(mgstr, "image/png", 9) == 0 || 
-				strncmp(mgstr, "image/jpeg", 10) == 0)
+				strncmp(mgstr, "image/jpeg", 10) == 0 ||
+				strncmp(mgstr, "image/gif", 9) == 0)
 				++pics_total;
 		}
 	}
@@ -173,6 +174,8 @@ int main(int argc, char **argv) {
 			PNG_GetSize(fullname, &width, &height, &depth);
 		else if (strncmp(mgstr, "image/jpeg", 10) == 0)
 			JPG_GetSize(fullname, &width, &height, &depth);
+		else if (strncmp(mgstr, "image/gif", 9) == 0)
+			GIF_GetSize(fullname, &width, &height, &depth);
 		else {
 			width = 1;
 			height = 1;
