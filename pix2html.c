@@ -7,6 +7,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <magic.h>
 
 #include "pix2html.h"
@@ -116,7 +117,9 @@ int main(int argc, char **argv) {
 		else {
 			char path[4096];
 			sprintf(path, "%s/%s", dirname, de->d_name);
-			mgstr = magic_file(mg, path);
+			char real_path[4096];
+			realpath(path, real_path);
+			mgstr = magic_file(mg, real_path);
 			if (strncmp(mgstr, "image/png", 9) == 0 || 
 				strncmp(mgstr, "image/jpeg", 10) == 0 ||
 				strncmp(mgstr, "image/gif", 9) == 0)
@@ -158,10 +161,11 @@ int main(int argc, char **argv) {
 		char name[1024], fullname[1024];
 		unsigned int width, height, depth, size;
 	} spec[4];
+	memset(spec, 0, sizeof(struct linespec) * 4);
 	while (1) {
 		de = readdir(dir);
 		if (de == NULL) break;
-		else if (de->d_type != DT_REG) continue;
+		else if (de->d_type != DT_REG && de->d_type != DT_LNK) continue;
 		else if (strncmp(de->d_name, ".", 1) == 0) continue;
 		else if (strncmp(de->d_name, "..", 2) == 0) continue;
 
@@ -169,13 +173,15 @@ int main(int argc, char **argv) {
 
 		sprintf(fullname, "%s/%s", dirname, de->d_name);
 		sprintf(fullname_parent, "../%s/%s", dirname, de->d_name);
-		mgstr = magic_file(mg, fullname);
+		char real_path[4096];
+		realpath(fullname, real_path);
+		mgstr = magic_file(mg, real_path);
 		if (strncmp(mgstr, "image/png", 9) == 0)
-			PNG_GetSize(fullname, &width, &height, &depth);
+			PNG_GetSize(real_path, &width, &height, &depth);
 		else if (strncmp(mgstr, "image/jpeg", 10) == 0)
-			JPG_GetSize(fullname, &width, &height, &depth);
+			JPG_GetSize(real_path, &width, &height, &depth);
 		else if (strncmp(mgstr, "image/gif", 9) == 0)
-			GIF_GetSize(fullname, &width, &height, &depth);
+			GIF_GetSize(real_path, &width, &height, &depth);
 		else {
 			width = 1;
 			height = 1;
@@ -230,7 +236,7 @@ int main(int argc, char **argv) {
 		spec[linecnt].width = width;
 		spec[linecnt].height = height;
 		spec[linecnt].depth = depth;
-		stat(fullname, &st);
+		stat(real_path, &st);
 		spec[linecnt].size = st.st_size;
 
 		fprintf(fp, "  <td><a href=\"../%s\"><img src=\"../%s\" width=\"%u\" height=\"%u\"/></a></td>\n", 
