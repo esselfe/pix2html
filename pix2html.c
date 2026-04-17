@@ -12,22 +12,24 @@
 
 #include "pix2html.h"
 
-const char *pix2html_version_string = "0.3.2";
+const char *pix2html_version_string = "0.3.3";
 
 #define OPTION_NONE    0
 #define OPTION_VERBOSE 1
+#define OPTION_DEBUG   (1<<1)
 unsigned int options;
 
 const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'V'},
 	{"verbose", no_argument, NULL, 'v'},
+	{"debug", no_argument, NULL, 'D'},
 	{NULL, 0, NULL, 0}
 };
-const char *short_options = "hVv";
+const char *short_options = "hVvD";
 
 void HelpShow(void) {
-	printf("Usage: pix2html [ -h/--help | -V/--version | -v/--verbose ] DIRNAME\n");
+	printf("Usage: pix2html [ -h/--help | -V/--version | -v/--verbose | -D/--debug ] DIRNAME\n");
 }
 
 void VersionShow(void) {
@@ -52,8 +54,11 @@ int main(int argc, char **argv) {
 		case 'v':
 			options |= OPTION_VERBOSE;
 			break;
+		case 'D':
+			options |= OPTION_DEBUG;
+			break;
 		default:
-			fprintf(stderr, "Unknown option: %d / <%c>\n", c, (char)c);
+			fprintf(stderr, "pix2html:main() error: Unknown option: %d / <%c>\n", c, (char)c);
 			break;
 		}
 	}
@@ -70,11 +75,14 @@ int main(int argc, char **argv) {
 		if (argv[c][0] == '-') continue;
 		else {
 			if (stat(argv[c], &st) < 0) {
-				fprintf(stderr, "Cannot open %s: %s\n", argv[c], strerror(errno));
+				fprintf(stderr, "pix2html:main() error: Cannot open %s: %s\n", argv[c], strerror(errno));
 				exit(1);
 			}
 			if (st.st_mode & S_IFDIR) {
 				dirname = argv[c];
+				if (options & OPTION_DEBUG)
+					printf("D: Parsed command line options, found directory '%s'\n", dirname);
+				
 				break;
 			}
 		}
@@ -83,27 +91,41 @@ int main(int argc, char **argv) {
 	// Create the output directory
 	unsigned int pagedirlen = strlen(dirname)+strlen("-html");
 	char *pagedir = malloc(pagedirlen+1);
+	if (pagedir == NULL) {
+		fprintf(stderr, "pix2html:main() error: malloc() failed, exiting.\n");
+		exit(ENOMEM);
+	}
 	memset(pagedir, 0, pagedirlen+1);
 	sprintf(pagedir, "%s-html", dirname);
+
+	if (options & OPTION_DEBUG)
+		printf("D: Creating output directory '%s'\n", pagedir);
+	
 	if (mkdir(pagedir, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0) {
 		if (errno != EEXIST) {
-			fprintf(stderr, "Cannot create directory: %s\n", strerror(errno));
+			fprintf(stderr, "pix2html:main() error: Cannot create directory: %s\n", strerror(errno));
 			exit(errno);
 		}
+		else if (options & OPTION_DEBUG && errno == EEXIST)
+			printf("D: Directory already exists, continuing\n");
 	}
 
-	// Open file type descriptions
+	if (options & OPTION_DEBUG)
+		printf("D: Opening file MIME type descriptions\n");
+	
 	magic_t mg = magic_open(MAGIC_MIME_TYPE);
 	if (mg == NULL) {
-		fprintf(stderr, "magic_open() failed: %s\n", magic_error(mg));
+		fprintf(stderr, "pix2html:main() error: magic_open() failed: %s\n", magic_error(mg));
 		exit(1);
 	}
 	magic_load(mg, NULL);
 
-	// Open the directory and get the image file count
+	if (options & OPTION_DEBUG)
+		printf("D: Opening the source directory to get the total image file count\n");
+	
 	DIR *dir = opendir(dirname);
 	if (dir == NULL) {
-		fprintf(stderr, "Cannot open %s: %s\n", dirname, strerror(errno));
+		fprintf(stderr, "pix2html:main() error: Cannot open %s: %s\n", dirname, strerror(errno));
 		exit(errno);
 	}
 	unsigned int pics_total = 0, page_total = 0;
@@ -120,14 +142,21 @@ int main(int argc, char **argv) {
 			char real_path[4096];
 			realpath(path, real_path);
 			mgstr = magic_file(mg, real_path);
+			
 			if (strncmp(mgstr, "image/png", 9) == 0 || 
 				strncmp(mgstr, "image/jpeg", 10) == 0 ||
 				strncmp(mgstr, "image/gif", 9) == 0)
 				++pics_total;
+			
+			if (options & OPTION_DEBUG)
+				printf("D: '%s' is '%s' total: %u\n", de->d_name, mgstr, pics_total);
 		}
 	}
 	rewinddir(dir);
 
+	if (options & OPTION_DEBUG)
+		printf("D: Prepping initial output counters and variables...\n");
+	
 	unsigned int pagecnt = 1, pics_per_page = 100, picscnt = 0;
 	page_total = pics_total / pics_per_page;
 	if ((pics_total % pics_per_page) > 0)
@@ -145,7 +174,8 @@ int main(int argc, char **argv) {
 	sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
 	FILE *fp = fopen(pagefullname, "w+");
 	if (fp == NULL) {
-		fprintf(stderr, "Cannot open %s: %s\n", pagefullname, strerror(errno));
+		fprintf(stderr, "pix2html:main() error: Cannot open %s: %s\n",
+			pagefullname, strerror(errno));
 		exit(errno);
 	}
 	fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n"
@@ -162,12 +192,20 @@ int main(int argc, char **argv) {
 		unsigned int width, height, depth, size;
 	} spec[4];
 	memset(spec, 0, sizeof(struct linespec) * 4);
+	if (options & OPTION_DEBUG)
+		printf("D: loop started\n");
+	
+	size_t namelen = 0;
 	while (1) {
 		de = readdir(dir);
 		if (de == NULL) break;
-		else if (de->d_type != DT_REG && de->d_type != DT_LNK) continue;
+		else namelen = strlen(de->d_name);
+		
+		if (de->d_type != DT_REG && de->d_type != DT_LNK) continue;
 		else if (strncmp(de->d_name, ".", 1) == 0) continue;
 		else if (strncmp(de->d_name, "..", 2) == 0) continue;
+		else if (de->d_name[namelen-4] == 'h' && de->d_name[namelen-3] == 't' &&
+			de->d_name[namelen-2] == 'm' && de->d_name[namelen-1] == 'l') continue;
 
 		++picscnt;
 
@@ -264,7 +302,7 @@ int main(int argc, char **argv) {
 
 			if (picscnt != pics_total) {
 				sprintf(pagenamenext, "page-%04u.html", pagecnt+1);
-				fprintf(fp, "  <td><a href=\"%s\">next</a></td></tr></table>\n"
+				fprintf(fp, "  <td><font size=\"24px\"><a href=\"%s\">next</a></font></td></tr></table>\n"
 					"<table width=\"100%%\"><tr><td>\n", pagenamenext);
 			}
 			else
@@ -283,7 +321,8 @@ int main(int argc, char **argv) {
 				sprintf(pagefullname, "%s/%s", pagedir, pagename);
 				fp = fopen(pagefullname, "w+");
 				if (fp == NULL) {
-					fprintf(stderr, "Cannot open %s: %s\n", pagefullname, strerror(errno));
+					fprintf(stderr, "pix2html:main() error: Cannot open %s: %s\n",
+						pagefullname, strerror(errno));
 					exit(errno);
 				}
 				fprintf(fp, "<html>\n<head>\n<title>%s</title>\n</head>\n"
@@ -308,6 +347,9 @@ int main(int argc, char **argv) {
 
 	if (options & OPTION_VERBOSE)
 		printf("\n");
+	
+	if (options & OPTION_DEBUG)
+		printf("D: main() exiting\n");
 	
 	return 0;
 }
