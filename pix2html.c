@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
 			break;
 		case 'D':
 			options |= OPTION_DEBUG;
+			options |= OPTION_VERBOSE;
 			break;
 		default:
 			fprintf(stderr, "pix2html:main() error: Unknown option: %d / <%c>\n", c, (char)c);
